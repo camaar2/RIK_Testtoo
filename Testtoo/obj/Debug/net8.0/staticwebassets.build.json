@@ -1,0 +1,19 @@
+{
+  "Version": 1,
+  "Hash": "LT+d9vQYujrwDZ1K1tZRCxjfIA9KmpAB8HVB0kSE5IA=",
+  "Source": "Testtoo",
+  "BasePath": "_content/Testtoo",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [
+    {
+      "Name": "Testtoo/wwwroot",
+      "Source": "Testtoo",
+      "ContentRoot": "/Users/carmen/Projects/RIK_Event_testtoo/RIK_project/Testtoo/wwwroot/",
+      "BasePath": "_content/Testtoo",
+      "Pattern": "**"
+    }
+  ],
+  "Assets": []
+}
