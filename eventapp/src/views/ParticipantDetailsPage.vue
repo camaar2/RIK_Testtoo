@@ -55,48 +55,54 @@ export default {
   data() {
     return {
       participant: {
-  participantId: null,
-  firstName: '',
-  lastName: '',
-  personalCode: '',
-  paymentMethod: '',
-  additionalInfo: '',
-  companyName: '',
-  companyRegistrationCode: '',
-  numberOfParticipantsFromCompany: null,
-  eventId: null,
-  event: null
-}
-  };
+        participantId: null,
+        firstName: '',
+        lastName: '',
+        personalCode: '',
+        paymentMethod: '',
+        additionalInfo: '',
+        companyName: '',
+        companyRegistrationCode: '',
+        numberOfParticipantsFromCompany: null,
+        eventId: null,
+        event: null
+      }
+    };
   },
   mounted() {
-  const participantId = this.$route.params.participantId;
-  console.log("Participant ID:", participantId); 
-  this.fetchParticipant(participantId);
+    const participantId = this.$route.params.participantId;
+    console.log("Participant ID:", participantId);
+    this.fetchParticipant(participantId);
   },
   methods: {
     fetchParticipant(participantId) {
-  axios.get(`http://localhost:7055/api/Participants/${participantId}`)
-    .then(response => {
-      console.log('Response Data:', response.data); 
-      this.participant = response.data;
-    })
-    .catch(error => {
-      console.error('Error fetching participant:', error);
-    });
+      axios.get(`http://localhost:7055/api/Participants/${participantId}`)
+          .then(response => {
+            console.log('Response Data:', response.data);
+            this.participant = response.data;
+          })
+          .catch(error => {
+            console.error('Error fetching participant:', error);
+          });
     },
-  },
-  saveParticipant() {
-  axios.put(`http://localhost:7055/api/Participants/${participantId}`)
-  .then(response => {
-      console.log('Response Data:', response.data); 
-      this.participant = response.data;
-    })
-    .catch(error => {
-      console.error('Error updating participant:', error);
-    });
+    saveParticipant() {
+      const participantId = this.participant.participantId;
+      console.log("Participant ID:", participantId); // Log participantId
+      console.log("Participant data:", this.participant); // Log participant data
+      axios.put(`http://localhost:7055/api/Participants/${participantId}`, this.participant)
+          .then(response => {
+            console.log('Response Data:', response.data);
+            this.participant = response.data;
+            this.$router.push({ name: 'AddParticipant', params: { eventId }});
+          })
+          .catch(error => {
+            console.error('Error updating participant:', error);
+          });
     },
-    
+    goBack() {
+      this.router.go(-4); 
+    }
+  }
 };
 </script>
 

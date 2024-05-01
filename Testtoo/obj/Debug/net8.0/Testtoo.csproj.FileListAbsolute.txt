@@ -72,3 +72,4 @@
 /Users/carmen/Projects/RIK_Event_testtoo/RIK_project/Testtoo/obj/Debug/net8.0/Testtoo.pdb
 /Users/carmen/Projects/RIK_Event_testtoo/RIK_project/Testtoo/obj/Debug/net8.0/Testtoo.genruntimeconfig.cache
 /Users/carmen/Projects/RIK_Event_testtoo/RIK_project/Testtoo/obj/Debug/net8.0/ref/Testtoo.dll
+/Users/carmen/Projects/RIK_Event_testtoo/RIK_project/Testtoo/obj/Debug/net8.0/Testtoo.sourcelink.json

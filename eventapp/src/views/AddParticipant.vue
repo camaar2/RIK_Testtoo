@@ -44,10 +44,11 @@
           </div>
         </div>
       </div>
-      <div class="white-box-section">
+      <!-- Add participant form -->
+      <div class="white-box-section" v-if="isEventInFuture">
         <div class="form-container">
           <h3 class="form-heading">Osavõtjate lisamine</h3>
-          <form class="participant-form">
+          <form class="participant-form" @submit.prevent="submitParticipant">
             <div class="participant-type">
               <label>
                 <input type="radio" v-model="participantType" value="individual"> Eraisik
@@ -67,8 +68,8 @@
                 <input id="lastName" v-model="lastName" type="text" placeholder="">
               </div>
               <div class="form-group">
-                <label for="idNumber">Isikukood:</label>
-                <input id="idNumber" v-model="idNumber" type="text" placeholder="">
+                <label for="personalCode">Isikukood:</label>
+                <input id="personalCode" v-model="personalCode" type="text" placeholder="">
               </div>
             </div>
 
@@ -78,12 +79,12 @@
                 <input id="companyName" v-model="companyName" type="text" placeholder="">
               </div>
               <div class="form-group">
-                <label for="companyRegCode">Ettevõtte registrikood:</label>
-                <input id="companyRegCode" v-model="companyRegCode" type="text" placeholder="">
+                <label for="companyRegistrationCode">Ettevõtte registrikood:</label>
+                <input id="companyRegistrationCode" v-model="companyRegistrationCode" type="text" placeholder="">
               </div>
               <div class="form-group">
-                <label for="numParticipants">Ettevõttest tulevate osavõtjate arv:</label>
-                <input id="numParticipants" v-model="numParticipants" type="number" placeholder="">
+                <label for="numberOfParticipantsFromCompany">Ettevõttest tulevate osavõtjate arv:</label>
+                <input id="numberOfParticipantsFromCompany" v-model="numberOfParticipantsFromCompany" type="number" placeholder="">
               </div>
             </div>
 
@@ -98,6 +99,8 @@
               <label for="additionalInfo">Lisainfo:</label>
               <textarea id="additionalInfo" v-model="additionalInfo" placeholder=""></textarea>
             </div>
+            <input type="hidden" v-model="eventId">
+
             <div class="button-container">
               <button class="back-button">Tagasi</button>
               <button type="submit" class="submit-button">Salvesta</button>
@@ -108,7 +111,6 @@
     </main>
   </div>
 </template>
-
 <script>
 import axios from 'axios';
 export default {
@@ -117,13 +119,14 @@ export default {
     return {
       event: {},
       participants: [],
+      participantId: '',
       participantType: 'individual',
       firstName: '',
       lastName: '',
-      idNumber: '',
+      personalCode: '',
       companyName: '',
-      companyRegCode: '',
-      numParticipants: '',
+      companyRegistrationCode: '',
+      numberOfParticipantsFromCompany: '',
       paymentMethod: 'bankTransfer',
       additionalInfo: ''
     };
@@ -134,62 +137,88 @@ export default {
     this.fetchEvent(eventId);
     this.fetchParticipantsByEventId(eventId);
   },
-  methods:{
+  methods: {
     submitParticipant() {
       const data = {
-        eventId: this.event.id,
-        firstName: this.firstName,
-        lastName: this.lastName,
-        idNumber: this.idNumber,
-        companyName: this.companyName,
-        companyRegCode: this.companyRegCode,
-        numParticipants: this.numParticipants,
-        paymentMethod: this.paymentMethod,
-        additionalInfo: this.additionalInfo
+        EventId: this.eventId,
+        FirstName: this.firstName,
+        LastName: this.lastName,
+        PersonalCode: this.personalCode,
+        CompanyName: this.companyName,
+        CompanyRegistrationCode: this.companyRegistrationCode,
+        NumberOfParticipantsFromCompany: this.numberOfParticipantsFromCompany,
+        PaymentMethod: this.paymentMethod,
+        AdditionalInfo: this.additionalInfo
       };
+      axios.post('http://localhost:7055/api/Participants', data)
+          .then(response => {
+            console.log('Participant saved:', response.data);
+            this.clearForm();
+          })
+          .catch(error => {
+            console.error('Error saving participant:', error);
+          });
     },
-  fetchEvent(eventId) {
+    fetchEvent(eventId) {
       axios.get(`http://localhost:7055/api/Events/${eventId}`)
-        .then(response => {
-          this.event = response.data;
-        })
-        .catch(error => {
-          console.error('Error fetching event:', error);
-        });
+          .then(response => {
+            this.event = response.data;
+          })
+          .catch(error => {
+            console.error('Error fetching event:', error);
+          });
     },
     fetchParticipantsByEventId(eventId) {
-  axios.get(`http://localhost:7055/api/participants/event/${eventId}`)
-    .then(response => {
-      this.participants = response.data;
-      console.log("Participants:", this.participants); 
-    })
-    .catch(error => {
-      console.error('Error fetching participants:', error);
-    });
-  },
-  postParticipant(){
-  axios.post('http://localhost:7055/api/Participants', data)
-    .then(response => {
-      console.log('Participant saved:', response.data);
-    })
-    .catch(error => {
-      console.error('Error saving participant:', error);
-    });
-  },
-
+      axios.get(`http://localhost:7055/api/participants/event/${eventId}`)
+          .then(response => {
+            this.participants = response.data;
+            console.log("Participants:", this.participants);
+          })
+          .catch(error => {
+            console.error('Error fetching participants:', error);
+          });
+    },
+    deleteParticipant(participantId) {
+      axios.delete(`http://localhost:7055/api/Participants/${participantId}`)
+          .then(response => {
+            console.log('Participant deleted:', response);
+            this.fetchParticipantsByEventId(this.$route.params.eventId); 
+          })
+          .catch(error => {
+            console.error('Error deleting participant:', error);
+          });
+    },
     filterParticipants() {
       this.filteredParticipants = this.participants.filter(participant => participant.eventId === eventId);
     },
     formatDateTime(dateTime) {
       const date = new Date(dateTime);
       const hours = date.getHours();
-      const minutes = date.getMinutes().toString().padStart(2, '0'); 
+      const minutes = date.getMinutes().toString().padStart(2, '0');
 
       return `${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()}`;
     },
+    clearForm() {
+      this.firstName = '';
+      this.lastName = '';
+      this.PersonalCode = '';
+      this.companyName = '';
+      this.CompanyRegistrationCode = '';
+      this.NumberOfParticipantsFromCompany = '';
+      this.paymentMethod = 'bankTransfer';
+      this.AdditionalInfo = '';
+    },
+  },
+  computed: {
+    isEventInFuture() {
+      const currentDate = new Date();
+
+      const eventDate = new Date(this.event.dateTime);
+
+      return eventDate > currentDate;
+    }
   }
 }
-
 </script>
 
 <style scoped>
@@ -354,11 +383,11 @@ button {
 
 .participant-actions {
   display: flex;
-  align-items: left;
+  //align-items: left;
 }
 .participant-item {
   display: flex;
-  align-items: left;
+  //align-items: left;
   justify-content: space-between;
   margin-bottom: 10px;
 }

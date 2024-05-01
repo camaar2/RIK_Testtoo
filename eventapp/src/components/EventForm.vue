@@ -19,7 +19,7 @@
             </div>
             <div class="form-group">
               <label for="eventTime">Toimumisaeg:</label>
-              <input type="text" id="eventTime" name="eventTime" placeholder="pp.kk.aaaa hh:mm" v-model="formData.dateTime">
+              <input type="datetime-local" id="eventTime" name="eventTime" v-model="formData.dateTime" required placeholder="pp.kk.aaaa tt:mm" class="input-field">
             </div>
             <div class="form-group">
               <label for="eventLocation">Koht:</label>
@@ -46,8 +46,9 @@ import axios from 'axios';
 export default {
   data() {
     return {
-      formData: {
-        name: '', 
+      events: [],
+      formData:{
+        name: '',
         dateTime: '',
         location: '',
         additionalInfo: ''
@@ -56,33 +57,44 @@ export default {
   },
   methods: {
     submitEvent() {
-      const eventData = {
-        event: {
-          name: this.formData.name,
-          dateTime: this.formData.dateTime,
-          location: this.formData.location,
-          additionalInfo: this.formData.additionalInfo
-        }
-      };
-
-      axios.post('http://localhost:7055/api/Events', formData)
-        .then(response => {
-          console.log('Event saved:', response.data);
-          this.clearForm();
-        })
-        .catch(error => {
-          console.error('Error submitting event:', error);
-        });
+      axios.post('http://localhost:7055/api/Events', this.formData)
+          .then(response => {
+            this.events.push(response.data);
+            this.formData.name ='';
+            this.formData.dateTime= '';
+            this.formData.location='';
+            this.formData.additionalInfo='';
+            console.log('Event added:', response.data);
+          })
+          .catch(error => {
+            console.error('Error adding event:', error);
+          });
     },
     clearForm() {
       this.formData.name = '';
       this.formData.dateTime = '';
       this.formData.location = '';
       this.formData.additionalInfo = '';
+    },
+    formatDateTime(dateTime) {
+      const date = new Date(dateTime);
+      const hours = date.getHours();
+      const minutes = date.getMinutes().toString().padStart(2, '0');
+
+      return `${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()}, ${hours}:${minutes}`;
+    },
+    formatDate(date) {
+      const formattedDate = new Date(date);
+      const day = String(formattedDate.getDate()).padStart(2, '0');
+      const month = String(formattedDate.getMonth() + 1).padStart(2, '0');
+      const year = formattedDate.getFullYear();
+
+      return `${day}.${month}.${year}`;
     }
-  }
+  },
 };
 </script>
+
 
 <style>
 
